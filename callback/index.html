@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Authorization callback</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4efe6;
+      --ink: #2c261f;
+      --muted: #6d6256;
+      --box: #fffdf9;
+      --rule: #e2d5c3;
+      --accent: #8a4b22;
+      --on-accent: #fffaf4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1612;
+        --ink: #f4eee6;
+        --muted: #cbbba8;
+        --box: #120f0c;
+        --rule: #3c342c;
+        --accent: #e2a45c;
+        --on-accent: #1a1612;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    main { width: min(40rem, calc(100% - 2rem)); }
+    h1 {
+      margin: 0 0 0.45rem;
+      font-family: Georgia, Palatino, serif;
+      font-weight: 500;
+      font-size: 1.75rem;
+    }
+    .note {
+      margin: 0 0 1.1rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    pre {
+      margin: 0 0 1rem;
+      padding: 1rem 1.05rem;
+      background: var(--box);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      background: var(--accent);
+      color: var(--on-accent);
+      font: inherit;
+      font-size: 0.95rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Authorization callback</h1>
+    <p class="note">Copy this code back to your assistant. It expires in a few minutes.</p>
+    <pre id="box"></pre>
+    <button id="copy" type="button">Copy code</button>
+  </main>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get("code") || "";
+      var state = params.get("state") || "";
+      var box = document.getElementById("box");
+      var button = document.getElementById("copy");
+
+      box.textContent =
+        "code: " + (code || "(missing)") + "\n" +
+        "state: " + (state || "(missing)");
+
+      function fallbackCopy(text) {
+        var area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        document.body.appendChild(area);
+        area.select();
+        try { document.execCommand("copy"); } catch (err) {}
+        document.body.removeChild(area);
+      }
+
+      function markCopied() {
+        button.textContent = "Copied";
+        window.setTimeout(function () { button.textContent = "Copy code"; }, 1600);
+      }
+
+      button.addEventListener("click", function () {
+        var text = code || box.textContent;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(markCopied, function () {
+            fallbackCopy(text);
+            markCopied();
+          });
+        } else {
+          fallbackCopy(text);
+          markCopied();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
